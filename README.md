@@ -15,7 +15,7 @@ This project manages a database for concerts, including bands, venues, and conce
 1. *Clone the Repository*
 
    ```sh
-   git clone this repo
+   git clone this
    cd concerts-database
 2. *Install Dependencies*
 

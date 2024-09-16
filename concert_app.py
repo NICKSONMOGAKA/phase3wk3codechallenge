@@ -32,7 +32,7 @@ conn.commit()
 
 # Defining the Concert class
 class Concert:
-    def _init_(self, id, band_id, venue_id, date):
+    def __init__(self, id, band_id, venue_id, date):
         self.id = id
         self.band_id = band_id
         self.venue_id = venue_id
@@ -45,8 +45,10 @@ class Concert:
         JOIN bands ON concerts.band_id = bands.id
         WHERE concerts.id = ?
         '''
-        cursor.execute(query, (concert_id,))
-        return cursor.fetchone()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (concert_id,))
+            return cursor.fetchone()
 
     @staticmethod
     def venue(concert_id):
@@ -55,8 +57,10 @@ class Concert:
         JOIN venues ON concerts.venue_id = venues.id
         WHERE concerts.id = ?
         '''
-        cursor.execute(query, (concert_id,))
-        return cursor.fetchone()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (concert_id,))
+            return cursor.fetchone()
 
     @staticmethod
     def hometown_show(concert_id):
@@ -66,9 +70,11 @@ class Concert:
         JOIN venues ON concerts.venue_id = venues.id
         WHERE concerts.id = ?
         '''
-        cursor.execute(query, (concert_id,))
-        band_hometown, venue_city = cursor.fetchone()
-        return band_hometown == venue_city
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (concert_id,))
+            band_hometown, venue_city = cursor.fetchone()
+            return band_hometown == venue_city
 
     @staticmethod
     def introduction(concert_id):
@@ -78,13 +84,15 @@ class Concert:
         JOIN venues ON concerts.venue_id = venues.id
         WHERE concerts.id = ?
         '''
-        cursor.execute(query, (concert_id,))
-        venue_city, band_name, band_hometown = cursor.fetchone()
-        return f"Hello {venue_city}!!!!! We are {band_name} and we're from {band_hometown}"
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (concert_id,))
+            venue_city, band_name, band_hometown = cursor.fetchone()
+            return f"Hello {venue_city}!!!!! We are {band_name} and we're from {band_hometown}"
 
 # Defining the Venue class
 class Venue:
-    def _init_(self, id, title, city):
+    def __init__(self, id, title, city):
         self.id = id
         self.title = title
         self.city = city
@@ -95,8 +103,10 @@ class Venue:
         SELECT * FROM concerts
         WHERE venue_id = ?
         '''
-        cursor.execute(query, (venue_id,))
-        return cursor.fetchall()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (venue_id,))
+            return cursor.fetchall()
 
     @staticmethod
     def bands(venue_id):
@@ -105,8 +115,10 @@ class Venue:
         JOIN bands ON concerts.band_id = bands.id
         WHERE concerts.venue_id = ?
         '''
-        cursor.execute(query, (venue_id,))
-        return cursor.fetchall()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (venue_id,))
+            return cursor.fetchall()
 
     @staticmethod
     def concert_on(venue_id, date):
@@ -115,8 +127,10 @@ class Venue:
         WHERE venue_id = ? AND date = ?
         LIMIT 1
         '''
-        cursor.execute(query, (venue_id, date))
-        return cursor.fetchone()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (venue_id, date))
+            return cursor.fetchone()
 
     @staticmethod
     def most_frequent_band(venue_id):
@@ -128,12 +142,14 @@ class Venue:
         ORDER BY performances DESC
         LIMIT 1
         '''
-        cursor.execute(query, (venue_id,))
-        return cursor.fetchone()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (venue_id,))
+            return cursor.fetchone()
 
 # Defining the Band class
 class Band:
-    def _init_(self, id, name, hometown):
+    def __init__(self, id, name, hometown):
         self.id = id
         self.name = name
         self.hometown = hometown
@@ -144,8 +160,10 @@ class Band:
         SELECT * FROM concerts
         WHERE band_id = ?
         '''
-        cursor.execute(query, (band_id,))
-        return cursor.fetchall()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (band_id,))
+            return cursor.fetchall()
 
     @staticmethod
     def venues(band_id):
@@ -154,8 +172,10 @@ class Band:
         JOIN venues ON concerts.venue_id = venues.id
         WHERE concerts.band_id = ?
         '''
-        cursor.execute(query, (band_id,))
-        return cursor.fetchall()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (band_id,))
+            return cursor.fetchall()
 
     @staticmethod
     def play_in_venue(band_id, venue_id, date):
@@ -163,8 +183,10 @@ class Band:
         INSERT INTO concerts (band_id, venue_id, date)
         VALUES (?, ?, ?)
         '''
-        cursor.execute(query, (band_id, venue_id, date))
-        conn.commit()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (band_id, venue_id, date))
+            conn.commit()
 
     @staticmethod
     def all_introductions(band_id):
@@ -174,9 +196,11 @@ class Band:
         JOIN bands ON concerts.band_id = bands.id
         WHERE concerts.band_id = ?
         '''
-        cursor.execute(query, (band_id,))
-        introductions = cursor.fetchall()
-        return [f"Hello {city}!!!!! We are {name} and we're from {hometown}" for city, name, hometown in introductions]
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query, (band_id,))
+            introductions = cursor.fetchall()
+            return [f"Hello {city}!!!!! We are {name} and we're from {hometown}" for city, name, hometown in introductions]
 
     @staticmethod
     def most_performances():
@@ -187,25 +211,26 @@ class Band:
         ORDER BY performances DESC
         LIMIT 1
         '''
-        cursor.execute(query)
-        return cursor.fetchone()
+        with sqlite3.connect('concerts.db') as conn:
+            cursor = conn.cursor()
+            cursor.execute(query)
+            return cursor.fetchone()
 
-# Creating  some  bands and venues
-cursor.execute("INSERT INTO bands (name, hometown) VALUES (?, ?)", ('Sauti Sol', 'Nairobi'))
-cursor.execute("INSERT INTO bands (name, hometown) VALUES (?, ?)", ('Elani', 'Nairobi'))
-cursor.execute("INSERT INTO venues (title, city) VALUES (?, ?)", ('Kenyatta International Convention Centre', 'Nairobi'))
-cursor.execute("INSERT INTO venues (title, city) VALUES (?, ?)", ('Moi Stadium', 'Kisumu'))
+# Creating some bands and venues
+with sqlite3.connect('concerts.db') as conn:
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO bands (name, hometown) VALUES (?, ?)", ('Sauti Sol', 'Nairobi'))
+    cursor.execute("INSERT INTO bands (name, hometown) VALUES (?, ?)", ('Elani', 'Nairobi'))
+    cursor.execute("INSERT INTO venues (title, city) VALUES (?, ?)", ('Kenyatta International Convention Centre', 'Nairobi'))
+    cursor.execute("INSERT INTO venues (title, city) VALUES (?, ?)", ('Moi Stadium', 'Kisumu'))
 
-# Adding some concerts
-sauti_sol_id = cursor.execute("SELECT id FROM bands WHERE name = 'Sauti Sol'").fetchone()[0]
-elani_id = cursor.execute("SELECT id FROM bands WHERE name = 'Elani'").fetchone()[0]
-kenyatta_id = cursor.execute("SELECT id FROM venues WHERE title = 'Kenyatta International Convention Centre'").fetchone()[0]
-moi_id = cursor.execute("SELECT id FROM venues WHERE title = 'Moi Stadium'").fetchone()[0]
+    # Adding some concerts
+    sauti_sol_id = cursor.execute("SELECT id FROM bands WHERE name = 'Sauti Sol'").fetchone()[0]
+    elani_id = cursor.execute("SELECT id FROM bands WHERE name = 'Elani'").fetchone()[0]
+    kenyatta_id = cursor.execute("SELECT id FROM venues WHERE title = 'Kenyatta International Convention Centre'").fetchone()[0]
+    moi_id = cursor.execute("SELECT id FROM venues WHERE title = 'Moi Stadium'").fetchone()[0]
 
-cursor.execute("INSERT INTO concerts (band_id, venue_id, date) VALUES (?, ?, ?)", (sauti_sol_id, kenyatta_id, '2024-09-15'))
-cursor.execute("INSERT INTO concerts (band_id, venue_id, date) VALUES (?, ?, ?)", (elani_id, moi_id, '2024-09-16'))
+    cursor.execute("INSERT INTO concerts (band_id, venue_id, date) VALUES (?, ?, ?)", (sauti_sol_id, kenyatta_id, '2024-09-15'))
+    cursor.execute("INSERT INTO concerts (band_id, venue_id, date) VALUES (?, ?, ?)", (elani_id, moi_id, '2024-09-16'))
 
-conn.commit()
-
-# Closing the connection
-conn.close()
+    conn.commit()
